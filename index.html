@@ -3,317 +3,352 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Mundo conectado - Realidad aumentada</title>
+  <title>Conexiones globales de Internet - WebAR</title>
+
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
+
   <style>
-    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; background: #000; }
-    #panel {
-      position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 10;
-      background: rgba(2, 10, 20, 0.78); color: white; padding: 12px 14px;
-      border-radius: 14px; font-size: 14px; line-height: 1.35; text-align: center;
-      backdrop-filter: blur(4px); box-shadow: 0 0 20px rgba(0,0,0,0.28);
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #000;
     }
-    #panel strong { color: #79d9ff; }
+    #panel {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 10;
+      background: rgba(3, 12, 26, 0.80);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.35;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(4px);
+    }
+    #panel strong { color: #ffd974; }
     #panel button {
-      margin-top: 8px; border: none; border-radius: 999px; padding: 8px 14px; font-weight: bold;
-      background: #79d9ff; color: #00131a;
+      margin-top: 8px;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: bold;
+      background: #ffd974;
+      color: #1a1a1a;
     }
   </style>
 </head>
 <body>
   <div id="panel">
-    <strong>Mundo conectado - versión mejorada</strong><br>
-    Apuntá la cámara al marcador. Verás la Tierra girando con muchas conexiones luminosas entre distintos puntos del planeta.
+    <strong>Conexiones globales de Internet</strong><br>
+    Apuntá la cámara al marcador. Vas a ver un mundo girando con rutas luminosas que conectan distintos puntos del planeta.
     <br>
     <button onclick="document.getElementById('panel').style.display='none'">Ocultar mensaje</button>
   </div>
 
-<script>
-AFRAME.registerComponent('mundo-internet-pro', {
-  init: function () {
-    const THREE = AFRAME.THREE;
-    const group = new THREE.Group();
-    this.group = group;
-    this.el.object3D.add(group);
+  <script>
+    AFRAME.registerComponent('mundo-internet-v3', {
+      init: function () {
+        const THREE = AFRAME.THREE;
+        const group = new THREE.Group();
+        this.group = group;
+        this.el.object3D.add(group);
 
-    function latLongToVector3(lat, lon, radius) {
-      const phi = (90 - lat) * Math.PI / 180;
-      const theta = (lon + 180) * Math.PI / 180;
-      return new THREE.Vector3(
-        -radius * Math.sin(phi) * Math.cos(theta),
-         radius * Math.cos(phi),
-         radius * Math.sin(phi) * Math.sin(theta)
-      );
-    }
+        function latLongToVector3(lat, lon, radius) {
+          const phi = (90 - lat) * Math.PI / 180;
+          const theta = (lon + 180) * Math.PI / 180;
+          return new THREE.Vector3(
+            -radius * Math.sin(phi) * Math.cos(theta),
+             radius * Math.cos(phi),
+             radius * Math.sin(phi) * Math.sin(theta)
+          );
+        }
 
-    // ===== Textura más cercana a un globo conectado nocturno =====
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
+        // ===== Textura nocturna estilizada del planeta =====
+        const canvas = document.createElement('canvas');
+        canvas.width = 2048;
+        canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
 
-    // Océano oscuro
-    const ocean = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    ocean.addColorStop(0, '#0b1830');
-    ocean.addColorStop(0.45, '#0f294d');
-    ocean.addColorStop(1, '#07111f');
-    ctx.fillStyle = ocean;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // océano profundo
+        const ocean = ctx.createRadialGradient(1400, 260, 100, 1024, 512, 1300);
+        ocean.addColorStop(0, '#234f79');
+        ocean.addColorStop(0.22, '#15375e');
+        ocean.addColorStop(0.55, '#0c2140');
+        ocean.addColorStop(1, '#060d19');
+        ctx.fillStyle = ocean;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Bruma / volumen
-    const glow = ctx.createRadialGradient(canvas.width*0.72, canvas.height*0.22, 60, canvas.width*0.72, canvas.height*0.22, 860);
-    glow.addColorStop(0, 'rgba(70,170,255,0.12)');
-    glow.addColorStop(1, 'rgba(70,170,255,0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // brillo de amanecer lateral
+        const sunrise = ctx.createRadialGradient(1720, 220, 30, 1720, 220, 430);
+        sunrise.addColorStop(0, 'rgba(255,210,120,0.38)');
+        sunrise.addColorStop(0.18, 'rgba(255,180,80,0.15)');
+        sunrise.addColorStop(1, 'rgba(255,180,80,0)');
+        ctx.fillStyle = sunrise;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    function drawBlob(points, fill, shadow) {
-      ctx.save();
-      if (shadow) {
-        ctx.shadowColor = shadow;
-        ctx.shadowBlur = 28;
+        // sutil rejilla geográfica
+        ctx.save();
+        ctx.strokeStyle = 'rgba(120,170,220,0.05)';
+        ctx.lineWidth = 1;
+        for (let y = 80; y < canvas.height; y += 86) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        for (let x = 0; x <= canvas.width; x += 128) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        function fillSmoothBlob(points, fill, shadow) {
+          ctx.save();
+          ctx.fillStyle = fill;
+          ctx.shadowColor = shadow || 'rgba(255,220,120,0.10)';
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.moveTo(points[0][0], points[0][1]);
+          for (let i = 1; i < points.length; i++) {
+            const prev = points[i - 1];
+            const cur = points[i];
+            const midX = (prev[0] + cur[0]) / 2;
+            const midY = (prev[1] + cur[1]) / 2;
+            ctx.quadraticCurveTo(prev[0], prev[1], midX, midY);
+          }
+          const last = points[points.length - 1];
+          const first = points[0];
+          ctx.quadraticCurveTo(last[0], last[1], first[0], first[1]);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Continentes estilizados con aspecto más realista
+        fillSmoothBlob([[290,205],[360,160],[450,166],[512,212],[532,260],[512,330],[456,368],[395,348],[340,304],[305,250]], '#3f6d53'); // N. América
+        fillSmoothBlob([[468,375],[520,410],[555,490],[550,615],[515,736],[458,682],[432,570],[438,464]], '#3a654d'); // S. América
+        fillSmoothBlob([[952,194],[1032,162],[1128,175],[1192,212],[1245,270],[1230,330],[1170,342],[1088,322],[1022,286],[962,244]], '#466e57'); // Europa oeste
+        fillSmoothBlob([[1025,350],[1090,388],[1148,474],[1174,565],[1134,688],[1068,790],[970,742],[928,632],[930,520],[956,435]], '#3a654d'); // África
+        fillSmoothBlob([[1210,205],[1360,175],[1510,188],[1665,245],[1770,328],[1782,430],[1715,520],[1578,558],[1435,508],[1325,440],[1246,320]], '#456b53'); // Asia
+        fillSmoothBlob([[1545,632],[1658,650],[1762,718],[1730,792],[1598,820],[1498,760]], '#41624d'); // Australia
+        fillSmoothBlob([[160,118],[220,92],[278,112],[252,145],[198,150]], '#63775e', 'rgba(255,240,160,0.05)'); // Groenlandia
+        fillSmoothBlob([[730,770],[838,780],[890,820],[830,860],[740,846]], '#6b6740', 'rgba(255,230,140,0.08)'); // Antártida hint
+
+        // puntos de luces de ciudades sobre la textura
+        const textureLights = [
+          [420,244],[458,255],[480,290],[355,225],[400,314],[515,465],[500,560],[476,660],
+          [982,232],[1018,216],[1060,236],[1090,255],[1120,240],[1168,282],[1187,300],
+          [1038,434],[1058,486],[1038,548],[1008,620],[1080,690],
+          [1260,248],[1315,286],[1388,302],[1455,248],[1498,268],[1548,309],[1602,360],[1652,300],[1686,395],[1455,390],
+          [1560,704],[1635,734]
+        ];
+        textureLights.forEach(([x, y], i) => {
+          const radius = 3 + (i % 4);
+          const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius * 8);
+          gradient.addColorStop(0, 'rgba(255,245,190,0.95)');
+          gradient.addColorStop(0.28, 'rgba(255,218,110,0.55)');
+          gradient.addColorStop(1, 'rgba(255,218,110,0)');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(x, y, radius * 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,245,205,0.95)';
+          ctx.beginPath();
+          ctx.arc(x, y, radius * 0.9, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        const earthTexture = new THREE.CanvasTexture(canvas);
+        earthTexture.needsUpdate = true;
+
+        const earth = new THREE.Mesh(
+          new THREE.SphereGeometry(1, 96, 96),
+          new THREE.MeshStandardMaterial({ map: earthTexture, roughness: 0.93, metalness: 0.02 })
+        );
+        group.add(earth);
+        this.earth = earth;
+
+        // atmósfera
+        const atmosphere = new THREE.Mesh(
+          new THREE.SphereGeometry(1.05, 64, 64),
+          new THREE.MeshBasicMaterial({ color: 0x5bbcff, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+        );
+        group.add(atmosphere);
+
+        const outerGlow = new THREE.Mesh(
+          new THREE.SphereGeometry(1.10, 64, 64),
+          new THREE.MeshBasicMaterial({ color: 0xa7d6ff, transparent: true, opacity: 0.05, side: THREE.DoubleSide })
+        );
+        group.add(outerGlow);
+
+        // luces
+        group.add(new THREE.AmbientLight(0xffffff, 0.68));
+        const keyLight = new THREE.PointLight(0xffffff, 1.25);
+        keyLight.position.set(4.2, 3.0, 4.5);
+        group.add(keyLight);
+
+        const warmLight = new THREE.PointLight(0xffd58c, 0.42);
+        warmLight.position.set(5.2, 1.0, 2.6);
+        group.add(warmLight);
+
+        const blueBack = new THREE.PointLight(0x5ab8ff, 0.36);
+        blueBack.position.set(-3.4, -1.2, -3.3);
+        group.add(blueBack);
+
+        // Nodos principales de conectividad
+        const nodes = [
+          {name:'Montevideo', lat:-34.9, lon:-56.2},
+          {name:'Buenos Aires', lat:-34.6, lon:-58.4},
+          {name:'Sao Paulo', lat:-23.5, lon:-46.6},
+          {name:'Santiago', lat:-33.4, lon:-70.6},
+          {name:'Lima', lat:-12.0, lon:-77.0},
+          {name:'Ciudad de Mexico', lat:19.4, lon:-99.1},
+          {name:'Miami', lat:25.8, lon:-80.2},
+          {name:'Nueva York', lat:40.7, lon:-74.0},
+          {name:'Toronto', lat:43.6, lon:-79.3},
+          {name:'Los Angeles', lat:34.0, lon:-118.2},
+          {name:'Londres', lat:51.5, lon:-0.1},
+          {name:'Paris', lat:48.8, lon:2.3},
+          {name:'Madrid', lat:40.4, lon:-3.7},
+          {name:'Frankfurt', lat:50.1, lon:8.7},
+          {name:'Casablanca', lat:33.6, lon:-7.6},
+          {name:'Johannesburgo', lat:-26.2, lon:28.0},
+          {name:'Dubái', lat:25.2, lon:55.2},
+          {name:'Mumbai', lat:19.0, lon:72.8},
+          {name:'Singapur', lat:1.35, lon:103.8},
+          {name:'Hong Kong', lat:22.3, lon:114.2},
+          {name:'Seul', lat:37.5, lon:126.9},
+          {name:'Tokio', lat:35.6, lon:139.7},
+          {name:'Sidney', lat:-33.8, lon:151.2},
+          {name:'Auckland', lat:-36.8, lon:174.7}
+        ];
+
+        const nodeObjects = [];
+        nodes.forEach((n, idx) => {
+          const p = latLongToVector3(n.lat, n.lon, 1.03);
+          const dotColor = idx % 4 === 0 ? 0xffd76b : 0xffffff;
+          const dot = new THREE.Mesh(
+            new THREE.SphereGeometry(idx % 5 === 0 ? 0.021 : 0.016, 10, 10),
+            new THREE.MeshBasicMaterial({ color: dotColor })
+          );
+          dot.position.copy(p);
+          group.add(dot);
+
+          const halo = new THREE.Mesh(
+            new THREE.SphereGeometry(0.032, 10, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffd76b, transparent: true, opacity: 0.16 })
+          );
+          halo.position.copy(p);
+          group.add(halo);
+
+          nodeObjects.push({ data: n, position: p });
+        });
+
+        // Conexiones estilo "rutas globales" más similares a tu ejemplo
+        const links = [
+          [0,1],[0,2],[0,7],[0,10],[0,12],
+          [1,2],[1,3],[1,7],[1,10],
+          [2,4],[2,6],[2,7],[2,10],[2,16],[2,18],
+          [3,4],[3,5],[3,7],
+          [4,5],[4,7],[4,10],
+          [5,6],[5,7],[5,9],[5,10],[5,12],
+          [6,7],[6,10],[6,12],
+          [7,8],[7,9],[7,10],[7,11],[7,12],[7,13],[7,16],[7,19],[7,21],
+          [8,10],[8,13],
+          [9,21],[9,22],
+          [10,11],[10,12],[10,13],[10,14],[10,16],[10,17],[10,18],[10,19],[10,21],
+          [11,12],[11,13],[11,16],
+          [12,13],[12,14],[12,16],
+          [13,16],[13,19],[13,20],
+          [14,15],[14,16],
+          [15,16],[15,18],
+          [16,17],[16,18],[16,19],[16,20],[16,21],
+          [17,18],[17,19],[17,21],
+          [18,19],[18,20],[18,21],[18,22],[18,23],
+          [19,20],[19,21],
+          [20,21],
+          [21,22],[21,23],
+          [22,23]
+        ];
+
+        this.pulses = [];
+
+        links.forEach((pair, index) => {
+          const a = nodeObjects[pair[0]].position;
+          const b = nodeObjects[pair[1]].position;
+          const dist = a.distanceTo(b);
+          const arcHeight = 1.22 + dist * 0.26;
+          const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(arcHeight);
+          const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+          const points = curve.getPoints(80);
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+          const lineColor = index % 4 === 0 ? 0xffd976 : (index % 4 === 1 ? 0xfff0c2 : (index % 4 === 2 ? 0xf8c15a : 0xa8dbff));
+          const line = new THREE.Line(
+            geometry,
+            new THREE.LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.55 })
+          );
+          group.add(line);
+
+          const pulse = new THREE.Mesh(
+            new THREE.SphereGeometry(index % 3 === 0 ? 0.015 : 0.012, 8, 8),
+            new THREE.MeshBasicMaterial({ color: index % 2 === 0 ? 0xffffff : 0xffdf84 })
+          );
+          pulse.userData.curve = curve;
+          pulse.userData.offset = (index / links.length) % 1;
+          pulse.userData.speed = 0.9 + (index % 5) * 0.18;
+          group.add(pulse);
+          this.pulses.push(pulse);
+        });
+
+        // Aros orbitales decorativos muy sutiles
+        for (let i = 0; i < 3; i++) {
+          const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(1.22 + i * 0.035, 0.0024, 8, 160),
+            new THREE.MeshBasicMaterial({ color: i === 1 ? 0xffdf8c : 0x8fd4ff, transparent: true, opacity: 0.10 })
+          );
+          ring.rotation.x = i === 0 ? Math.PI / 2.7 : (i === 1 ? Math.PI / 3.8 : Math.PI / 1.9);
+          ring.rotation.y = i === 2 ? Math.PI / 5 : Math.PI / 7;
+          group.add(ring);
+        }
+
+        group.scale.set(0.94, 0.94, 0.94);
+        group.position.set(0, 0.72, 0);
+      },
+
+      tick: function (time, delta) {
+        if (!this.group) return;
+        this.group.rotation.y += delta * 0.00013;
+        this.earth.rotation.y += delta * 0.00005;
+
+        this.pulses.forEach((p) => {
+          const t = ((time * 0.00012 * p.userData.speed * 5) + p.userData.offset) % 1;
+          const pos = p.userData.curve.getPointAt(t);
+          p.position.copy(pos);
+        });
       }
-      ctx.fillStyle = fill;
-      ctx.beginPath();
-      ctx.moveTo(points[0][0], points[0][1]);
-      for (let i = 1; i < points.length; i++) {
-        const p = points[i];
-        const prev = points[i-1];
-        const cx = (prev[0] + p[0]) / 2;
-        const cy = (prev[1] + p[1]) / 2;
-        ctx.quadraticCurveTo(prev[0], prev[1], cx, cy);
-      }
-      const last = points[points.length-1];
-      const first = points[0];
-      ctx.quadraticCurveTo(last[0], last[1], first[0], first[1]);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-
-    const landFill = '#264e3c';
-    const landFill2 = '#2f6048';
-    const landGlow = 'rgba(255,220,90,0.15)';
-
-    // Continentes estilizados pero más orgánicos
-    drawBlob([[290,210],[355,165],[448,165],[490,210],[515,272],[500,340],[450,370],[390,350],[332,295]], landFill2, landGlow); // N. America
-    drawBlob([[480,380],[525,412],[560,490],[550,620],[505,750],[445,675],[430,560],[445,470]], landFill, landGlow); // S. America
-    drawBlob([[940,188],[1035,150],[1132,175],[1210,210],[1265,275],[1245,330],[1165,340],[1090,318],[1010,285],[950,250]], landFill2, landGlow); // Europe/West Asia
-    drawBlob([[1015,358],[1085,388],[1145,470],[1175,568],[1132,685],[1065,792],[968,748],[922,635],[928,525],[958,438]], landFill, landGlow); // Africa
-    drawBlob([[1215,210],[1345,180],[1492,185],[1650,240],[1758,315],[1785,430],[1715,525],[1560,555],[1420,508],[1320,438],[1250,325]], '#325d46', landGlow); // Asia
-    drawBlob([[1550,635],[1670,652],[1760,712],[1732,790],[1600,820],[1495,760]], '#335741', landGlow); // Australia
-    drawBlob([[730,760],[835,770],[892,810],[838,860],[742,840]], '#646040', 'rgba(255,235,140,0.1)'); // Antarctica hint
-    drawBlob([[160,118],[220,92],[275,112],[250,145],[195,148]], '#5b735e', 'rgba(255,225,120,0.08)'); // Greenland
-
-    // Algunas líneas sutiles de meridianos/paralelos sobre la textura
-    ctx.save();
-    ctx.strokeStyle = 'rgba(140,200,255,0.05)';
-    ctx.lineWidth = 1;
-    for (let i=0;i<=12;i++){
-      const y = 60 + i*75;
-      ctx.beginPath();
-      ctx.moveTo(0,y);
-      ctx.lineTo(canvas.width,y);
-      ctx.stroke();
-    }
-    for (let i=0;i<=20;i++){
-      const x = i*100;
-      ctx.beginPath();
-      ctx.moveTo(x,0);
-      ctx.lineTo(x,canvas.height);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    // Luces de ciudades: mapeadas sobre las zonas continentales
-    const cityLights = [
-      [420,245],[458,260],[470,295],[355,225],[405,315],[515,470],[500,575],[470,668], // Americas
-      [995,235],[1045,225],[1085,242],[1110,265],[1146,252],[1178,290], // Europe
-      [1040,435],[1062,488],[1035,555],[1010,630],[1080,690], // Africa
-      [1260,250],[1320,285],[1390,305],[1455,250],[1495,265],[1548,310],[1600,360],[1650,300],[1690,400],[1450,390], // Asia
-      [1565,705],[1635,732] // Australia
-    ];
-    cityLights.forEach(([x,y],i)=>{
-      const r = 4 + (i % 3);
-      const g = ctx.createRadialGradient(x,y,0,x,y,r*7);
-      g.addColorStop(0, 'rgba(255,235,160,0.95)');
-      g.addColorStop(0.25, 'rgba(255,210,90,0.65)');
-      g.addColorStop(1, 'rgba(255,210,90,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(x,y,r*7,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = 'rgba(255,240,185,0.95)';
-      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
     });
+  </script>
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    const earth = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 96, 96),
-      new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9, metalness: 0.02 })
-    );
-    group.add(earth);
-    this.earth = earth;
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+    arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
 
-    // Halo/atmósfera
-    const atmosphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1.055, 64, 64),
-      new THREE.MeshBasicMaterial({ color: 0x6ccfff, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
-    );
-    group.add(atmosphere);
-    const outerGlow = new THREE.Mesh(
-      new THREE.SphereGeometry(1.12, 64, 64),
-      new THREE.MeshBasicMaterial({ color: 0x44aaff, transparent: true, opacity: 0.05, side: THREE.DoubleSide })
-    );
-    group.add(outerGlow);
+    <a-marker type="pattern" url="markers/pattern-internet.patt" smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="3">
+      <a-entity mundo-internet-v3></a-entity>
+    </a-marker>
 
-    group.add(new THREE.AmbientLight(0xffffff, 0.72));
-    const sun = new THREE.PointLight(0xffffff, 1.35);
-    sun.position.set(3.8, 3.2, 4.5);
-    group.add(sun);
-    const backLight = new THREE.PointLight(0x4fa8ff, 0.45);
-    backLight.position.set(-3, -1.4, -3.2);
-    group.add(backLight);
-
-    // Nodos (ciudades/regiones principales)
-    const nodes = [
-      {name:'Montevideo', lat:-34.9, lon:-56.2},
-      {name:'Buenos Aires', lat:-34.6, lon:-58.4},
-      {name:'São Paulo', lat:-23.5, lon:-46.6},
-      {name:'Lima', lat:-12.0, lon:-77.0},
-      {name:'Ciudad de México', lat:19.4, lon:-99.1},
-      {name:'Miami', lat:25.8, lon:-80.2},
-      {name:'Nueva York', lat:40.7, lon:-74.0},
-      {name:'Los Ángeles', lat:34.0, lon:-118.2},
-      {name:'Londres', lat:51.5, lon:-0.1},
-      {name:'París', lat:48.8, lon:2.3},
-      {name:'Madrid', lat:40.4, lon:-3.7},
-      {name:'Frankfurt', lat:50.1, lon:8.7},
-      {name:'Casablanca', lat:33.6, lon:-7.6},
-      {name:'Johannesburgo', lat:-26.2, lon:28.0},
-      {name:'Dubái', lat:25.2, lon:55.2},
-      {name:'Mumbai', lat:19.0, lon:72.8},
-      {name:'Singapur', lat:1.35, lon:103.8},
-      {name:'Hong Kong', lat:22.3, lon:114.2},
-      {name:'Seúl', lat:37.5, lon:126.9},
-      {name:'Tokio', lat:35.6, lon:139.7},
-      {name:'Sídney', lat:-33.8, lon:151.2},
-      {name:'Auckland', lat:-36.8, lon:174.7}
-    ];
-
-    const nodeObjects = [];
-    nodes.forEach((n, idx) => {
-      const p = latLongToVector3(n.lat, n.lon, 1.03);
-      const color = idx % 3 === 0 ? 0xffe36a : 0xffffff;
-      const dot = new THREE.Mesh(
-        new THREE.SphereGeometry(idx % 5 === 0 ? 0.022 : 0.017, 12, 12),
-        new THREE.MeshBasicMaterial({ color })
-      );
-      dot.position.copy(p);
-      group.add(dot);
-      // pequeño halo del nodo
-      const halo = new THREE.Mesh(
-        new THREE.SphereGeometry(0.034, 12, 12),
-        new THREE.MeshBasicMaterial({ color: 0xffd36f, transparent: true, opacity: 0.16 })
-      );
-      halo.position.copy(p);
-      group.add(halo);
-      nodeObjects.push({ data:n, position:p });
-    });
-
-    // Conexiones más abundantes, estilo "red global"
-    const links = [
-      [0,1],[0,2],[0,6],[0,8],[0,10],
-      [1,2],[1,3],[1,6],[1,8],
-      [2,4],[2,5],[2,6],[2,8],[2,14],[2,16],
-      [3,4],[3,5],[3,6],
-      [4,5],[4,6],[4,7],[4,8],[4,10],
-      [5,6],[5,8],[5,10],
-      [6,7],[6,8],[6,9],[6,10],[6,11],[6,14],[6,17],
-      [7,19],[7,20],
-      [8,9],[8,10],[8,11],[8,12],[8,14],[8,15],[8,16],[8,17],[8,19],
-      [9,10],[9,11],[9,14],
-      [10,11],[10,12],[10,14],
-      [11,14],[11,17],[11,18],
-      [12,13],[12,14],
-      [13,14],[13,16],
-      [14,15],[14,16],[14,17],[14,18],[14,19],
-      [15,16],[15,17],[15,19],
-      [16,17],[16,18],[16,19],[16,20],[16,21],
-      [17,18],[17,19],
-      [18,19],
-      [19,20],[19,21],
-      [20,21]
-    ];
-
-    this.pulses = [];
-
-    links.forEach((pair, index) => {
-      const a = nodeObjects[pair[0]].position;
-      const b = nodeObjects[pair[1]].position;
-      const dist = a.distanceTo(b);
-      const lift = 1.25 + dist * 0.24;
-      const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(lift);
-      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-      const points = curve.getPoints(72);
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const color = index % 3 === 0 ? 0xffde73 : (index % 3 === 1 ? 0xfff4c6 : 0x87dfff);
-      const line = new THREE.Line(
-        geometry,
-        new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.46 })
-      );
-      group.add(line);
-
-      const pulse = new THREE.Mesh(
-        new THREE.SphereGeometry(index % 4 === 0 ? 0.017 : 0.013, 8, 8),
-        new THREE.MeshBasicMaterial({ color: index % 2 === 0 ? 0xffffff : 0xffe36a })
-      );
-      pulse.userData.curve = curve;
-      pulse.userData.offset = (index / links.length) % 1;
-      pulse.userData.speed = 0.16 + (index % 5) * 0.02;
-      group.add(pulse);
-      this.pulses.push(pulse);
-    });
-
-    // Aros suaves de órbita para reforzar el efecto tecnológico
-    for (let i=0;i<3;i++) {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(1.22 + i*0.03, 0.0025, 8, 140),
-        new THREE.MeshBasicMaterial({ color: i===2 ? 0x9adfff : 0x6fc8ff, transparent: true, opacity: 0.12 })
-      );
-      ring.rotation.x = i===0 ? Math.PI/2.8 : (i===1 ? Math.PI/1.9 : Math.PI/3.7);
-      ring.rotation.y = i===2 ? Math.PI/4 : Math.PI/6;
-      group.add(ring);
-    }
-
-    group.scale.set(0.92, 0.92, 0.92);
-    group.position.set(0, 0.7, 0);
-  },
-
-  tick: function (time, delta) {
-    if (!this.group) return;
-    this.group.rotation.y += delta * 0.00014;
-    this.earth.rotation.y += delta * 0.00006;
-    this.pulses.forEach((p) => {
-      const t = ((time * 0.00013 * p.userData.speed * 6) + p.userData.offset) % 1;
-      const pos = p.userData.curve.getPointAt(t);
-      p.position.copy(pos);
-    });
-  }
-});
-</script>
-
-<a-scene
-  embedded
-  vr-mode-ui="enabled: false"
-  renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
-  arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
-
-  <a-marker type="pattern" url="markers/pattern-internet.patt" smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="3">
-    <a-entity mundo-internet-pro></a-entity>
-  </a-marker>
-
-  <a-entity camera></a-entity>
-</a-scene>
+    <a-entity camera></a-entity>
+  </a-scene>
 </body>
 </html>

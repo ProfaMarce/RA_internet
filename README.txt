@@ -1,14 +1,24 @@
-Mundo conectado - WebAR versión mejorada
+Conexiones globales de Internet - WebAR (Versión 3)
 
-Esta versión muestra una Tierra más oscura y tecnológica, con más nodos y líneas curvas luminosas de conexión entre continentes.
+Esta es la tercera versión, con un estilo más impactante y más cercano a la imagen de referencia:
+- planeta oscuro, tipo vista nocturna/tecnológica
+- muchas conexiones curvas entre continentes
+- líneas doradas, blancas y celestes
+- más nodos globales y pulsos en movimiento
+- título inicial: Conexiones globales de Internet
 
-Cómo usar:
-1) Subir todo el contenido de esta carpeta a la raíz del repositorio en GitHub.
-2) Activar GitHub Pages (branch main, carpeta /root).
-3) Abrir el enlace desde el celular.
-4) Permitir la cámara.
-5) Apuntar al marcador incluido en la carpeta markers.
+Cómo actualizar en GitHub:
+1. Descomprimí este ZIP.
+2. En tu repositorio, borrá o reemplazá el index.html anterior.
+3. Subí este nuevo index.html.
+4. Mantené la carpeta markers (o reemplazala por la de este ZIP).
+5. Esperá 1 o 2 minutos para que GitHub Pages actualice.
+6. Abrí el mismo enlace desde el celular.
 
-Si ya tenías una versión anterior:
-- Reemplazá el archivo index.html por este nuevo.
-- Mantené la carpeta markers tal como está.
+Estructura esperada del repositorio:
+- index.html
+- README.txt
+- markers/
+  - marcador_mundo_internet.png
+  - marcador_mundo_internet.pdf
+  - pattern-internet.patt
