@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Mundo conectado - Realidad aumentada</title>
+
+  <!-- A-Frame + AR.js: WebAR con marcador personalizado -->
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #000;
+    }
+
+    #panel {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.72);
+      color: white;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.35;
+      text-align: center;
+      backdrop-filter: blur(4px);
+    }
+
+    #panel strong {
+      color: #66e3ff;
+    }
+
+    #panel button {
+      margin-top: 8px;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: bold;
+      background: #66e3ff;
+      color: #00131a;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="panel">
+    <strong>Mundo conectado</strong><br>
+    Apuntá la cámara al marcador incluido en la carpeta markers. Verás la Tierra girando con conexiones activas de internet.
+    <br>
+    <button onclick="document.getElementById('panel').style.display='none'">Ocultar mensaje</button>
+  </div>
+
+  <script>
+    /*
+      Componente personalizado:
+      - Crea un planeta Tierra simple.
+      - Agrega puntos de conexión.
+      - Dibuja líneas curvas luminosas simulando tráfico de internet.
+      - Todo gira lentamente.
+    */
+    AFRAME.registerComponent('mundo-internet', {
+      init: function () {
+        const THREE = AFRAME.THREE;
+        const group = new THREE.Group();
+        this.group = group;
+        this.el.object3D.add(group);
+
+        // Textura simple de la Tierra creada con canvas, así no dependemos de imágenes externas.
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        const ocean = ctx.createLinearGradient(0, 0, 1024, 512);
+        ocean.addColorStop(0, '#063b6f');
+        ocean.addColorStop(0.5, '#0b75b7');
+        ocean.addColorStop(1, '#001b38');
+        ctx.fillStyle = ocean;
+        ctx.fillRect(0, 0, 1024, 512);
+
+        function blob(points, color) {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(points[0][0], points[0][1]);
+          for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Continentes estilizados, no geográficos exactos.
+        blob([[185,150],[245,95],[320,125],[350,205],[315,265],[240,245],[190,205]], '#2fab66');
+        blob([[310,275],[365,315],[350,410],[305,470],[270,390]], '#279b5d');
+        blob([[480,125],[570,95],[675,120],[705,185],[650,230],[565,215],[500,190]], '#38bd73');
+        blob([[610,235],[690,255],[735,335],[700,420],[620,405],[575,320]], '#2ca564');
+        blob([[725,145],[835,120],[925,165],[955,245],[875,290],[755,255]], '#34b76d');
+        blob([[810,315],[900,340],[945,405],[870,450],[795,400]], '#2ea968');
+        blob([[450,360],[525,380],[555,430],[490,455],[425,420]], '#c8c078');
+        blob([[80,80],[150,55],[210,75],[165,110]], '#8fd2a3');
+        blob([[0,430],[1024,430],[1024,512],[0,512]], '#e8eef1');
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+
+        const earthGeometry = new THREE.SphereGeometry(1, 64, 64);
+        const earthMaterial = new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.85,
+          metalness: 0.05
+        });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        group.add(earth);
+        this.earth = earth;
+
+        // Atmósfera azulada.
+        const atmosphere = new THREE.Mesh(
+          new THREE.SphereGeometry(1.04, 64, 64),
+          new THREE.MeshBasicMaterial({
+            color: 0x3fdcff,
+            transparent: true,
+            opacity: 0.12
+          })
+        );
+        group.add(atmosphere);
+
+        // Iluminación.
+        group.add(new THREE.AmbientLight(0xffffff, 0.85));
+        const light = new THREE.PointLight(0xffffff, 1.2);
+        light.position.set(3, 4, 4);
+        group.add(light);
+
+        // Conversión latitud/longitud a punto 3D en la esfera.
+        function latLongToVector3(lat, lon, radius) {
+          const phi = (90 - lat) * Math.PI / 180;
+          const theta = (lon + 180) * Math.PI / 180;
+          return new THREE.Vector3(
+            -radius * Math.sin(phi) * Math.cos(theta),
+             radius * Math.cos(phi),
+             radius * Math.sin(phi) * Math.sin(theta)
+          );
+        }
+
+        // Nodos aproximados: ciudades/regiones con mucha conectividad.
+        const nodes = [
+          {name:'Montevideo', lat:-34.9, lon:-56.2},
+          {name:'São Paulo', lat:-23.5, lon:-46.6},
+          {name:'Buenos Aires', lat:-34.6, lon:-58.4},
+          {name:'Nueva York', lat:40.7, lon:-74.0},
+          {name:'Los Ángeles', lat:34.0, lon:-118.2},
+          {name:'Londres', lat:51.5, lon:-0.1},
+          {name:'París', lat:48.8, lon:2.3},
+          {name:'Madrid', lat:40.4, lon:-3.7},
+          {name:'Tokio', lat:35.6, lon:139.7},
+          {name:'Seúl', lat:37.5, lon:126.9},
+          {name:'Singapur', lat:1.35, lon:103.8},
+          {name:'Sídney', lat:-33.8, lon:151.2},
+          {name:'Johannesburgo', lat:-26.2, lon:28.0},
+          {name:'Dubái', lat:25.2, lon:55.2},
+          {name:'Mumbai', lat:19.0, lon:72.8}
+        ];
+
+        const nodeObjects = [];
+        nodes.forEach(n => {
+          const p = latLongToVector3(n.lat, n.lon, 1.055);
+          const dot = new THREE.Mesh(
+            new THREE.SphereGeometry(0.028, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xfff36b })
+          );
+          dot.position.copy(p);
+          group.add(dot);
+          nodeObjects.push({ data:n, position:p });
+        });
+
+        // Conexiones: líneas curvas entre nodos.
+        const links = [
+          [0,1],[0,2],[0,3],[1,3],[1,5],[2,3],[3,4],[3,5],[4,8],
+          [5,6],[5,7],[5,13],[6,9],[7,12],[8,9],[8,10],[9,10],
+          [10,11],[10,14],[13,14],[12,13],[3,8],[5,10],[1,10],[0,7]
+        ];
+
+        this.pulses = [];
+
+        links.forEach((pair, index) => {
+          const a = nodeObjects[pair[0]].position;
+          const b = nodeObjects[pair[1]].position;
+          const mid = a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(1.45);
+          const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+          const points = curve.getPoints(80);
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          const material = new THREE.LineBasicMaterial({
+            color: 0x66e3ff,
+            transparent: true,
+            opacity: 0.55
+          });
+          const line = new THREE.Line(geometry, material);
+          group.add(line);
+
+          // Pequeño pulso que viaja por la conexión.
+          const pulse = new THREE.Mesh(
+            new THREE.SphereGeometry(0.018, 10, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+          );
+          pulse.userData.curve = curve;
+          pulse.userData.offset = index / links.length;
+          group.add(pulse);
+          this.pulses.push(pulse);
+        });
+
+        // Escala y ubicación sobre el marcador.
+        group.scale.set(0.8, 0.8, 0.8);
+        group.position.set(0, 0.65, 0);
+      },
+
+      tick: function (time, delta) {
+        if (!this.group) return;
+        this.group.rotation.y += delta * 0.00018;
+        this.earth.rotation.y += delta * 0.00008;
+
+        this.pulses.forEach(p => {
+          const t = ((time * 0.00022) + p.userData.offset) % 1;
+          const pos = p.userData.curve.getPointAt(t);
+          p.position.copy(pos);
+        });
+      }
+    });
+  </script>
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+    arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
+
+    <!-- Marcador personalizado incluido en /markers. Imprimir o mostrar en otra pantalla. -->
+    <a-marker type="pattern" url="markers/pattern-internet.patt" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
+      <a-entity mundo-internet></a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+</body>
+</html>
